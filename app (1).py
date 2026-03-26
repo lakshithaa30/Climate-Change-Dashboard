@@ -16,7 +16,9 @@ from xgboost import XGBRegressor
 # Title
 # -----------------------------
 st.title("🌍 Climate Change Model Visualization Dashboard")
-
+import zipfile
+import os
+import pandas as pd
 
 # -----------------------------
 # Load Dataset
@@ -26,16 +28,27 @@ zip_path = "GlobalWeatherRepository.zip"
 if os.path.exists(zip_path):
 
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-        zip_ref.extractall()
+        zip_ref.extractall("data")
 
-    # Automatically find CSV file
-    csv_files = [f for f in os.listdir() if f.endswith('.csv')]
+    # Search CSV inside extracted folder
+    csv_file = None
+    for root, dirs, files in os.walk("data"):
+        for file in files:
+            if file.endswith(".csv"):
+                csv_file = os.path.join(root, file)
 
-    if csv_files:
-        data = pd.read_csv(csv_files[0])
-
-        st.success("Dataset Loaded Successfully ✅")
+    if csv_file:
+        data = pd.read_csv(csv_file)
+        st.success("Dataset Loaded Successfully")
         st.write(data.head())
+
+    else:
+        st.error("CSV file not found inside ZIP")
+
+else:
+    st.error("ZIP file not found")
+
+
 
         # -----------------------------
         # Select Target
