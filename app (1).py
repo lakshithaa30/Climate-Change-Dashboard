@@ -5,6 +5,31 @@ import seaborn as sns
 import zipfile
 
 st.title("Climate Change Prediction Dashboard")
+st.write("This app predicts climate impact based on Temperature and Humidity.")
+st.header("Enter Climate Data")
+temp=st.slider("Temperature(°C)", 0, 50, 25)
+humidity = st.slider("Humidity (%)", 0, 100, 50)
+
+# Prediction (simple logic)
+if st.button("Predict"):
+    prediction = (temp * 0.6) + (humidity * 0.4)
+    
+    st.subheader("Prediction Result")
+    st.write("Predicted Climate Impact:", round(prediction, 2))
+
+# Sample data for visualization
+st.header("Temperature & Humidity Trends")
+
+data = pd.DataFrame({
+    "Temperature": [20, 22, 25, 27, 30],
+    "Humidity": [40, 45, 50, 55, 60]
+})
+
+# Show table
+st.write(data)
+
+# Show chart
+st.line_chart(data)
 
 # Load dataset from ZIP file
 zip_file = "GlobalWeatherRepository.zip"
@@ -28,10 +53,6 @@ st.subheader("Histogram")
 fig, ax = plt.subplots()
 ax.hist(data[selected_column])
 st.pyplot(fig)
-
-# Line Chart
-st.subheader("Line Chart")
-st.line_chart(data[selected_column])
 
 # Bar Chart
 st.subheader("Bar Chart")
