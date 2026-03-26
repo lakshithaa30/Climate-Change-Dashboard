@@ -15,7 +15,6 @@ from xgboost import XGBRegressor
 # Title
 st.title("🌍 Climate Change Model Visualization Dashboard")
 
-
 # Load ZIP
 zip_path = "GlobalWeatherRepository.zip"
 
@@ -33,20 +32,19 @@ if os.path.exists(zip_path):
             data = pd.read_csv(zip_ref.open(csv_file))
 
             st.success("Dataset Loaded Successfully")
+
+            st.subheader("Dataset Preview")
             st.write(data.head())
 
-            # Keep only numeric columns
-            numeric_data = data.select_dtypes(include=['number'])
+            # Select Target Column
+            st.subheader("Select Target Column for Visualization")
 
-            st.subheader("Numeric Columns Used")
-            st.write(numeric_data.columns)
+            target = st.selectbox("Target Column", data.columns)
 
-            # Select target
-            target = st.selectbox("Select Target Column", numeric_data.columns)
+            X = data.drop(target, axis=1)
+            y = data[target]
 
-            X = numeric_data.drop(target, axis=1)
-            y = numeric_data[target]
-
+            # Train test split
             X_train, X_test, y_train, y_test = train_test_split(
                 X, y, test_size=0.2, random_state=42
             )
@@ -73,7 +71,7 @@ if os.path.exists(zip_path):
             xgb_pred = xgb.predict(X_test)
 
             # Visualization
-            st.header("Model Visualization")
+            st.header("📊 Model Visualization")
 
             st.subheader("Linear Regression")
             fig, ax = plt.subplots()
