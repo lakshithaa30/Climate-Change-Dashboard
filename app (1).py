@@ -4,132 +4,140 @@ import matplotlib.pyplot as plt
 import os
 import zipfile
 
-from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
-from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble import GradientBoostingRegressor
+from xgboost import XGBRegressor
 
-# Try importing XGBoost safely
-try:
-    from xgboost import XGBRegressor
-    xgb_available = True
-except:
-    xgb_available = False
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import r2_score, mean_absolute_error
 
 
-# Title
-st.title("🌍 Climate Change Model Visualization Dashboard")
+# ----------------------------------
+# Dashboard Title
+# ----------------------------------
+st.title("🌍 Climate Change Prediction Dashboard")
 
-# ZIP file path
+st.write("This app predicts climate impact based on Temperature and Humidity.")
+
+
+# ----------------------------------
+# Prediction Section
+# ----------------------------------
+st.header("🔮 Climate Impact Prediction")
+
+temp = st.slider("Temperature (°C)", 0, 50, 25)
+humidity = st.slider("Humidity (%)", 0, 100, 50)
+
+if st.button("Predict"):
+    prediction = (temp * 0.6) + (humidity * 0.4)
+    st.subheader("Prediction Result")
+    st.write("Predicted Climate Impact:", round(prediction, 2))
+
+
+# ----------------------------------
+# Sample Visualization
+# ----------------------------------
+st.header("📊 Temperature & Humidity Trends")
+
+sample_data = pd.DataFrame({
+    "Temperature": [20, 22, 25, 27, 30],
+    "Humidity": [40, 45, 50, 55, 60]
+})
+
+st.write(sample_data)
+st.line_chart(sample_data)
+
+
+# ----------------------------------
+# Load Dataset from ZIP
+# ----------------------------------
+st.header("📂 Dataset Analysis")
+
 zip_path = "GlobalWeatherRepository.zip"
+csv_file = "GlobalWeatherRepository.csv"
 
 if os.path.exists(zip_path):
 
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-        file_names = zip_ref.namelist()
+        zip_ref.extractall()
 
-        csv_file = None
-        for file in file_names:
-            if file.endswith(".csv"):
-                csv_file = file
+    data = pd.read_csv(csv_file)
 
-        if csv_file:
+    st.subheader("Dataset Preview")
+    st.write(data.head())
 
-            data = pd.read_csv(zip_ref.open(csv_file))
+    # ----------------------------------
+    # Model Training
+    # ----------------------------------
+    st.header("🤖 Model Comparison")
 
-            st.success("Dataset Loaded Successfully")
+    target = st.selectbox("Select Target Column", data.columns)
 
-            # Show dataset preview
-            st.subheader("Dataset Preview")
-            st.write(data.head())
+    X = data.drop(target, axis=1)
+    y = data[target]
 
-            # Select target column
-            st.subheader("Select Target Column")
-            target = st.selectbox("Choose target", data.columns)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
 
-            # Keep only numeric columns
-            numeric_data = data.select_dtypes(include=['number'])
 
-            # Check if target is numeric
-            if target not in numeric_data.columns:
-                st.error("Please select a numeric column")
-            else:
+    # Models
+    lr = LinearRegression()
+    rf = RandomForestRegressor()
+    gb = GradientBoostingRegressor()
+    xgb = XGBRegressor()
 
-                X = numeric_data.drop(target, axis=1)
-                y = numeric_data[target]
 
-                # Train Test Split
-                X_train, X_test, y_train, y_test = train_test_split(
-                    X, y, test_size=0.2, random_state=42
-                )
+    # Training
+    lr.fit(X_train, y_train)
+    rf.fit(X_train, y_train)
+    gb.fit(X_train, y_train)
+    xgb.fit(X_train, y_train)
 
-                # Models
-                lr = LinearRegression()
-                dt = DecisionTreeRegressor()
-                rf = RandomForestRegressor()
-                gb = GradientBoostingRegressor()
 
-                # Train Models
-                lr.fit(X_train, y_train)
-                dt.fit(X_train, y_train)
-                rf.fit(X_train, y_train)
-                gb.fit(X_train, y_train)
+    # Predictions
+    lr_pred = lr.predict(X_test)
+    rf_pred = rf.predict(X_test)
+    gb_pred = gb.predict(X_test)
+    xgb_pred = xgb.predict(X_test)
 
-                # Predictions
-                lr_pred = lr.predict(X_test)
-                dt_pred = dt.predict(X_test)
-                rf_pred = rf.predict(X_test)
-                gb_pred = gb.predict(X_test)
 
-                # Visualization
-                st.header("📊 Model Visualization")
+    # Metrics
+    models = ["Linear Regression", "Random Forest", "Gradient Boost", "XGBoost"]
 
-                # Linear Regression
-                st.subheader("Linear Regression")
-                fig, ax = plt.subplots()
-                ax.plot(y_test.values)
-                ax.plot(lr_pred)
-                st.pyplot(fig)
+    r2_scores = [
+        r2_score(y_test, lr_pred),
+        r2_score(y_test, rf_pred),
+        r2_score(y_test, gb_pred),
+        r2_score(y_test, xgb_pred)
+    ]
 
-                # Decision Tree
-                st.subheader("Decision Tree")
-                fig, ax = plt.subplots()
-                ax.plot(y_test.values)
-                ax.plot(dt_pred)
-                st.pyplot(fig)
+    mae_scores = [
+        mean_absolute_error(y_test, lr_pred),
+        mean_absolute_error(y_test, rf_pred),
+        mean_absolute_error(y_test, gb_pred),
+        mean_absolute_error(y_test, xgb_pred)
+    ]
 
-                # Random Forest
-                st.subheader("Random Forest")
-                fig, ax = plt.subplots()
-                ax.plot(y_test.values)
-                ax.plot(rf_pred)
-                st.pyplot(fig)
 
-                # Gradient Boosting
-                st.subheader("Gradient Boosting")
-                fig, ax = plt.subplots()
-                ax.plot(y_test.values)
-                ax.plot(gb_pred)
-                st.pyplot(fig)
+    # ----------------------------------
+    # Visualization
+    # ----------------------------------
+    st.subheader("📈 Model Comparison - R2 Score")
 
-                # XGBoost
-                if xgb_available:
-                    xgb = XGBRegressor()
-                    xgb.fit(X_train, y_train)
-                    xgb_pred = xgb.predict(X_test)
+    fig, ax = plt.subplots()
+    ax.bar(models, r2_scores)
+    plt.xticks(rotation=45)
+    st.pyplot(fig)
 
-                    st.subheader("XGBoost")
-                    fig, ax = plt.subplots()
-                    ax.plot(y_test.values)
-                    ax.plot(xgb_pred)
-                    st.pyplot(fig)
 
-                else:
-                    st.warning("XGBoost not installed")
+    st.subheader("📉 Model Comparison - MAE")
 
-        else:
-            st.error("CSV file not found inside ZIP")
+    fig, ax = plt.subplots()
+    ax.bar(models, mae_scores)
+    plt.xticks(rotation=45)
+    st.pyplot(fig)
 
 else:
-    st.error("ZIP file not found")
+    st.error("Dataset ZIP file not found. Please upload GlobalWeatherRepository.zip")
