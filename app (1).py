@@ -12,41 +12,40 @@ from sklearn.ensemble import GradientBoostingRegressor
 from xgboost import XGBRegressor
 
 
-# -----------------------------
 # Title
-# -----------------------------
 st.title("🌍 Climate Change Model Visualization Dashboard")
 
 
-# -----------------------------
-# Load Dataset from ZIP
-# -----------------------------
+# Load ZIP
 zip_path = "GlobalWeatherRepository.zip"
 
 if os.path.exists(zip_path):
 
-    with zipfile.ZipFile(zip_path) as z:
+    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        file_names = zip_ref.namelist()
 
-        # Show files inside ZIP (for debugging)
-        file_list = z.namelist()
-        st.write("Files inside ZIP:", file_list)
-
-        # Find CSV file
-        csv_file = [f for f in file_list if f.endswith(".csv")]
+        csv_file = None
+        for file in file_names:
+            if file.endswith(".csv"):
+                csv_file = file
 
         if csv_file:
-            data = pd.read_csv(z.open(csv_file[0]))
+            data = pd.read_csv(zip_ref.open(csv_file))
 
-            st.success("Dataset Loaded Successfully ✅")
+            st.success("Dataset Loaded Successfully")
             st.write(data.head())
 
-            # -----------------------------
-            # Select Target
-            # -----------------------------
-            target = st.selectbox("Select Target Column", data.columns)
+            # Keep only numeric columns
+            numeric_data = data.select_dtypes(include=['number'])
 
-            X = data.drop(target, axis=1)
-            y = data[target]
+            st.subheader("Numeric Columns Used")
+            st.write(numeric_data.columns)
+
+            # Select target
+            target = st.selectbox("Select Target Column", numeric_data.columns)
+
+            X = numeric_data.drop(target, axis=1)
+            y = numeric_data[target]
 
             X_train, X_test, y_train, y_test = train_test_split(
                 X, y, test_size=0.2, random_state=42
@@ -73,38 +72,33 @@ if os.path.exists(zip_path):
             gb_pred = gb.predict(X_test)
             xgb_pred = xgb.predict(X_test)
 
-            # Visualizations
+            # Visualization
             st.header("Model Visualization")
 
-            # Linear Regression
             st.subheader("Linear Regression")
             fig, ax = plt.subplots()
             ax.plot(y_test.values)
             ax.plot(lr_pred)
             st.pyplot(fig)
 
-            # Decision Tree
             st.subheader("Decision Tree")
             fig, ax = plt.subplots()
             ax.plot(y_test.values)
             ax.plot(dt_pred)
             st.pyplot(fig)
 
-            # Random Forest
             st.subheader("Random Forest")
             fig, ax = plt.subplots()
             ax.plot(y_test.values)
             ax.plot(rf_pred)
             st.pyplot(fig)
 
-            # Gradient Boosting
             st.subheader("Gradient Boosting")
             fig, ax = plt.subplots()
             ax.plot(y_test.values)
             ax.plot(gb_pred)
             st.pyplot(fig)
 
-            # XGBoost
             st.subheader("XGBoost")
             fig, ax = plt.subplots()
             ax.plot(y_test.values)
@@ -112,7 +106,7 @@ if os.path.exists(zip_path):
             st.pyplot(fig)
 
         else:
-            st.error("No CSV file found inside ZIP")
+            st.error("CSV file not found inside ZIP")
 
 else:
     st.error("ZIP file not found")
