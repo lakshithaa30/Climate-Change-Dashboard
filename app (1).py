@@ -17,134 +17,97 @@ from xgboost import XGBRegressor
 # -----------------------------
 st.title("🌍 Climate Change Model Visualization Dashboard")
 
-st.write("Visualization using Machine Learning Models")
-
 
 # -----------------------------
 # Load Dataset
 # -----------------------------
 zip_path = "GlobalWeatherRepository.zip"
-csv_file = "GlobalWeatherRepository.csv"
 
 if os.path.exists(zip_path):
 
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         zip_ref.extractall()
 
-    data = pd.read_csv(csv_file)
+    # Automatically find CSV file
+    csv_files = [f for f in os.listdir() if f.endswith('.csv')]
 
-    st.success("Dataset Loaded Successfully ✅")
+    if csv_files:
+        data = pd.read_csv(csv_files[0])
 
-    # -----------------------------
-    # Dataset Preview
-    # -----------------------------
-    st.subheader("Dataset Preview")
-    st.write(data.head())
+        st.success("Dataset Loaded Successfully ✅")
+        st.write(data.head())
 
+        # -----------------------------
+        # Select Target
+        # -----------------------------
+        target = st.selectbox("Select Target Column", data.columns)
 
-    # -----------------------------
-    # Select Target Column
-    # -----------------------------
-    st.subheader("Select Target Column")
+        X = data.drop(target, axis=1)
+        y = data[target]
 
-    target = st.selectbox("Target Column", data.columns)
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=42
+        )
 
-    X = data.drop(target, axis=1)
-    y = data[target]
+        # Models
+        lr = LinearRegression()
+        dt = DecisionTreeRegressor()
+        rf = RandomForestRegressor()
+        gb = GradientBoostingRegressor()
+        xgb = XGBRegressor()
 
+        # Train
+        lr.fit(X_train, y_train)
+        dt.fit(X_train, y_train)
+        rf.fit(X_train, y_train)
+        gb.fit(X_train, y_train)
+        xgb.fit(X_train, y_train)
 
-    # -----------------------------
-    # Train Test Split
-    # -----------------------------
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42
-    )
+        # Predict
+        lr_pred = lr.predict(X_test)
+        dt_pred = dt.predict(X_test)
+        rf_pred = rf.predict(X_test)
+        gb_pred = gb.predict(X_test)
+        xgb_pred = xgb.predict(X_test)
 
+        # Visualization
+        st.header("Model Visualizations")
 
-    # -----------------------------
-    # Models
-    # -----------------------------
-    lr = LinearRegression()
-    dt = DecisionTreeRegressor()
-    rf = RandomForestRegressor()
-    gb = GradientBoostingRegressor()
-    xgb = XGBRegressor()
+        # Linear Regression
+        st.subheader("Linear Regression")
+        fig, ax = plt.subplots()
+        ax.plot(y_test.values)
+        ax.plot(lr_pred)
+        st.pyplot(fig)
 
+        # Decision Tree
+        st.subheader("Decision Tree")
+        fig, ax = plt.subplots()
+        ax.plot(y_test.values)
+        ax.plot(dt_pred)
+        st.pyplot(fig)
 
-    # -----------------------------
-    # Train Models
-    # -----------------------------
-    lr.fit(X_train, y_train)
-    dt.fit(X_train, y_train)
-    rf.fit(X_train, y_train)
-    gb.fit(X_train, y_train)
-    xgb.fit(X_train, y_train)
+        # Random Forest
+        st.subheader("Random Forest")
+        fig, ax = plt.subplots()
+        ax.plot(y_test.values)
+        ax.plot(rf_pred)
+        st.pyplot(fig)
 
+        # Gradient Boosting
+        st.subheader("Gradient Boosting")
+        fig, ax = plt.subplots()
+        ax.plot(y_test.values)
+        ax.plot(gb_pred)
+        st.pyplot(fig)
 
-    # -----------------------------
-    # Predictions
-    # -----------------------------
-    lr_pred = lr.predict(X_test)
-    dt_pred = dt.predict(X_test)
-    rf_pred = rf.predict(X_test)
-    gb_pred = gb.predict(X_test)
-    xgb_pred = xgb.predict(X_test)
+        # XGBoost
+        st.subheader("XGBoost")
+        fig, ax = plt.subplots()
+        ax.plot(y_test.values)
+        ax.plot(xgb_pred)
+        st.pyplot(fig)
 
-
-    # -----------------------------
-    # Visualization
-    # -----------------------------
-    st.header("📊 Model Visualization")
-
-
-    # Linear Regression
-    st.subheader("Linear Regression")
-
-    fig, ax = plt.subplots()
-    ax.plot(y_test.values, label="Actual")
-    ax.plot(lr_pred, label="Predicted")
-    ax.legend()
-    st.pyplot(fig)
-
-
-    # Decision Tree
-    st.subheader("Decision Tree")
-
-    fig, ax = plt.subplots()
-    ax.plot(y_test.values, label="Actual")
-    ax.plot(dt_pred, label="Predicted")
-    ax.legend()
-    st.pyplot(fig)
-
-
-    # Random Forest
-    st.subheader("Random Forest")
-
-    fig, ax = plt.subplots()
-    ax.plot(y_test.values, label="Actual")
-    ax.plot(rf_pred, label="Predicted")
-    ax.legend()
-    st.pyplot(fig)
-
-
-    # Gradient Boosting
-    st.subheader("Gradient Boosting")
-
-    fig, ax = plt.subplots()
-    ax.plot(y_test.values, label="Actual")
-    ax.plot(gb_pred, label="Predicted")
-    ax.legend()
-    st.pyplot(fig)
-
-
-    st.subheader("XGBoost")
-
-    fig, ax = plt.subplots()
-    ax.plot(y_test.values, label="Actual")
-    ax.plot(xgb_pred, label="Predicted")
-    ax.legend()
-    st.pyplot(fig)
-
-
-else:
-    st.error("Dataset ZIP file not found")
+    else:
+        st.error("CSV file not found inside ZIP")
+    st.error("ZIP file not found")
