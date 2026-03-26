@@ -2,11 +2,16 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import zipfile
 
 st.title("Climate Change Prediction Dashboard")
 
-# Load dataset
-data = pd.read_csv("GlobalWeatherRepository.csv")
+# Load dataset from ZIP file
+zip_file = "GlobalWeatherRepository.zip"
+
+with zipfile.ZipFile(zip_file, 'r') as z:
+    file_name = z.namelist()[0]   # Get CSV inside ZIP
+    data = pd.read_csv(z.open(file_name))
 
 st.subheader("Dataset Preview")
 st.write(data.head())
