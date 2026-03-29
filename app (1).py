@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -5,9 +6,10 @@ import seaborn as sns
 import zipfile
 import io
 
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.pagesizes import A4
+from reportlab.lib.enums import TA_JUSTIFY
 
 
 st.title("Climate Change Prediction Dashboard")
@@ -21,7 +23,7 @@ temp = st.slider("Temperature (°C)", 0, 50, 25)
 humidity = st.slider("Humidity (%)", 0, 100, 50)
 
 
-# Prediction Logic
+# Prediction
 if st.button("Predict"):
     prediction = (temp * 0.6) + (humidity * 0.4)
 
@@ -29,7 +31,7 @@ if st.button("Predict"):
     st.write("Predicted Climate Impact:", round(prediction, 2))
 
 
-# Sample Data Visualization
+# Sample Data
 st.header("Temperature & Humidity Trends")
 
 data = pd.DataFrame({
@@ -37,14 +39,11 @@ data = pd.DataFrame({
     "Humidity": [40, 45, 50, 55, 60]
 })
 
-# Show table
 st.write(data)
-
-# Show chart
 st.line_chart(data)
 
 
-# Load dataset from ZIP file
+# Load dataset
 zip_file = "GlobalWeatherRepository.zip"
 
 with zipfile.ZipFile(zip_file, 'r') as z:
@@ -56,7 +55,7 @@ st.subheader("Dataset Preview")
 st.write(data.head())
 
 
-# Data Visualization
+# Visualization
 st.subheader("Data Visualization")
 
 numeric_columns = data.select_dtypes(include=['float64','int64']).columns
@@ -80,75 +79,161 @@ st.bar_chart(data[selected_column].value_counts().head(10))
 
 
 # -----------------------------
-# Report Generation Function
+# Report Generation
 # -----------------------------
+
 def create_report():
+
     buffer = io.BytesIO()
     styles = getSampleStyleSheet()
+
     story = []
 
-    report_text = """
-    Climate Change Prediction Dashboard Report
+    # Title
+    story.append(Paragraph(
+        "Climate Change Prediction Dashboard Report",
+        styles['Heading1']
+    ))
 
-    1. Introduction
-    Climate change is one of the most significant global challenges affecting ecosystems,
-    weather patterns, and human life. This project focuses on developing a climate prediction dashboard.
-
-    2. Objectives
-    - Analyze climate-related data
-    - Visualize weather trends
-    - Predict climate impact
-    - Build interactive dashboard
-
-    3. Dataset Description
-    Global Weather Repository dataset is used which contains:
-    - Temperature
-    - Humidity
-    - Wind Speed
-    - Air Quality
-    - Location Details
-
-    4. Methodology
-    Data collection, preprocessing, visualization and prediction steps were performed.
-
-    5. Prediction Model
-    Climate Impact = (Temperature × 0.6) + (Humidity × 0.4)
-
-    6. Dashboard Features
-    - User Input
-    - Prediction
-    - Visualization
-    - Dataset preview
-    - Download report
-
-    7. Tools Used
-    - Python
-    - Streamlit
-    - Pandas
-    - Matplotlib
-
-    8. Results
-    The dashboard successfully predicts climate impact.
-
-    9. Future Work
-    - Add machine learning
-    - Improve accuracy
-    """
-
-    story.append(Paragraph("Climate Change Prediction Report", styles['Heading1']))
     story.append(Spacer(1,12))
-    story.append(Paragraph(report_text, styles['BodyText']))
 
-    doc = SimpleDocTemplate(buffer)
+
+    # Introduction
+    story.append(Paragraph(
+        "<b>1. Introduction</b><br/>"
+        "Climate change is one of the most critical global challenges affecting "
+        "weather patterns, ecosystems, and human life. Rising temperatures, "
+        "extreme weather conditions, and environmental changes require proper "
+        "analysis and prediction. This project develops a climate prediction "
+        "dashboard using data science techniques to predict climate impact.",
+        styles['BodyText']
+    ))
+
+    story.append(Spacer(1,12))
+
+
+    # Objectives
+    story.append(Paragraph(
+        "<b>2. Objectives</b><br/>"
+        "- Analyze climate-related data<br/>"
+        "- Visualize weather trends<br/>"
+        "- Predict climate impact<br/>"
+        "- Build interactive dashboard",
+        styles['BodyText']
+    ))
+
+    story.append(Spacer(1,12))
+
+
+    # Dataset
+    story.append(Paragraph(
+        "<b>3. Dataset Description</b><br/>"
+        "Global Weather Repository dataset is used which contains weather data "
+        "including temperature, humidity, wind speed, air quality and location details.",
+        styles['BodyText']
+    ))
+
+    story.append(Spacer(1,12))
+
+
+    # Methodology
+    story.append(Paragraph(
+        "<b>4. Methodology</b><br/>"
+        "The dataset is collected, cleaned, and visualized. Prediction model "
+        "is applied to predict climate impact.",
+        styles['BodyText']
+    ))
+
+    story.append(Spacer(1,12))
+
+
+    # Model
+    story.append(Paragraph(
+        "<b>5. Prediction Model</b><br/>"
+        "Climate Impact = (Temperature × 0.6) + (Humidity × 0.4)",
+        styles['BodyText']
+    ))
+
+    story.append(PageBreak())
+
+
+    # Page 2
+
+    story.append(Paragraph(
+        "<b>6. Dashboard Features</b><br/>"
+        "- User Input<br/>"
+        "- Prediction<br/>"
+        "- Visualization<br/>"
+        "- Dataset Preview<br/>"
+        "- Download Report",
+        styles['BodyText']
+    ))
+
+    story.append(Spacer(1,12))
+
+
+    # Tools
+    story.append(Paragraph(
+        "<b>7. Tools and Technologies</b><br/>"
+        "Python, Streamlit, Pandas, Matplotlib, Seaborn",
+        styles['BodyText']
+    ))
+
+    story.append(Spacer(1,12))
+
+
+    # Results
+    story.append(Paragraph(
+        "<b>8. Results</b><br/>"
+        "The dashboard successfully predicts climate impact and visualizes "
+        "weather trends effectively.",
+        styles['BodyText']
+    ))
+
+    story.append(Spacer(1,12))
+
+
+    # Advantages
+    story.append(Paragraph(
+        "<b>9. Advantages</b><br/>"
+        "- Easy to use<br/>"
+        "- Interactive dashboard<br/>"
+        "- Fast prediction",
+        styles['BodyText']
+    ))
+
+    story.append(Spacer(1,12))
+
+
+    # Future Work
+    story.append(Paragraph(
+        "<b>10. Future Enhancements</b><br/>"
+        "- Add Machine Learning Models<br/>"
+        "- Add Time Series Prediction<br/>"
+        "- Improve accuracy",
+        styles['BodyText']
+    ))
+
+    story.append(Spacer(1,12))
+
+
+    # Conclusion
+    story.append(Paragraph(
+        "<b>11. Conclusion</b><br/>"
+        "The project successfully builds a climate prediction dashboard "
+        "using data science techniques.",
+        styles['BodyText']
+    ))
+
+
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
     doc.build(story)
 
     buffer.seek(0)
     return buffer
 
 
-# -----------------------------
 # Download Button
-# -----------------------------
 
 st.subheader("Download Report")
 
