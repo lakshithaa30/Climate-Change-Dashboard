@@ -82,46 +82,64 @@ st.bar_chart(data[selected_column].value_counts().head(10))
 # -----------------------------
 # Report Generation Function
 # -----------------------------
-
 def create_report():
     buffer = io.BytesIO()
     styles = getSampleStyleSheet()
     story = []
 
-    story.append(Paragraph(
-        "Climate Change Prediction Report",
-        styles['Heading1']
-    ))
+    report_text = """
+    Climate Change Prediction Dashboard Report
 
-    story.append(Spacer(1, 12))
+    1. Introduction
+    Climate change is one of the most significant global challenges affecting ecosystems,
+    weather patterns, and human life. This project focuses on developing a climate prediction dashboard.
 
-    story.append(Paragraph(
-        "This dashboard predicts climate impact using temperature and humidity.",
-        styles['BodyText']
-    ))
+    2. Objectives
+    - Analyze climate-related data
+    - Visualize weather trends
+    - Predict climate impact
+    - Build interactive dashboard
 
-    story.append(Spacer(1, 12))
+    3. Dataset Description
+    Global Weather Repository dataset is used which contains:
+    - Temperature
+    - Humidity
+    - Wind Speed
+    - Air Quality
+    - Location Details
 
-    story.append(Paragraph(
-        "Dataset: Global Weather Repository",
-        styles['BodyText']
-    ))
+    4. Methodology
+    Data collection, preprocessing, visualization and prediction steps were performed.
 
-    story.append(Spacer(1, 12))
+    5. Prediction Model
+    Climate Impact = (Temperature × 0.6) + (Humidity × 0.4)
 
-    story.append(Paragraph(
-        "Model Used: Simple Weighted Prediction",
-        styles['BodyText']
-    ))
+    6. Dashboard Features
+    - User Input
+    - Prediction
+    - Visualization
+    - Dataset preview
+    - Download report
 
-    story.append(Spacer(1, 12))
+    7. Tools Used
+    - Python
+    - Streamlit
+    - Pandas
+    - Matplotlib
 
-    story.append(Paragraph(
-        "Visualization: Histogram, Bar Chart, Line Chart",
-        styles['BodyText']
-    ))
+    8. Results
+    The dashboard successfully predicts climate impact.
 
-    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    9. Future Work
+    - Add machine learning
+    - Improve accuracy
+    """
+
+    story.append(Paragraph("Climate Change Prediction Report", styles['Heading1']))
+    story.append(Spacer(1,12))
+    story.append(Paragraph(report_text, styles['BodyText']))
+
+    doc = SimpleDocTemplate(buffer)
     doc.build(story)
 
     buffer.seek(0)
